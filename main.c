@@ -33,6 +33,7 @@ void mult(uint16_t n, uint16_t inicio, uint16_t fim, int16_t **a, int16_t **b,
 void *controlt(void *param) {
   arq pt = *((arq *)param);
   uint16_t inicio = pt.i * (pt.n / pt.nt);
+  // FIXME calcula esse cara errado
   uint16_t fim = (pt.i == pt.nt - 1 ? pt.n - 1 : inicio + (pt.n / pt.nt) - 1);
 
   printf("Thread %u executando... ", pt.i);
@@ -98,6 +99,8 @@ int main(int argc, char *argv[]) {
   pthread_t tid[nt];   // the thread identifier
   pthread_attr_t attr; // set of thread attributes
   arq *params = NULL;
+
+  params = (arq *)malloc(sizeof(arq) * nt);
 
   clock_t begin = clock(); // start clock
 
