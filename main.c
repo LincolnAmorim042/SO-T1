@@ -22,9 +22,12 @@ void mult(uint16_t n, uint16_t inicio, uint16_t fim, int16_t **a, int16_t **b, i
     uint16_t i, j, k;
     for (i = inicio; i < fim; i++) {
         for (j = inicio; j < fim; j++) {
-            for (k = 0; k < n; k++)
+            for (k = 0; k < n; k++){
                 m[i][j] += a[i][k] * b[k][j];
+            }
+            printf("%d ", m[i][j]);
         }
+        printf("\n");
     }
 }
 
@@ -33,9 +36,8 @@ void *controlt(void *param) {
     uint16_t inicio = pt.i * (pt.n / pt.nt);
     uint16_t fim = (pt.i == pt.nt - 1 ? pt.n - 1 : inicio + (pt.n / pt.nt) - 1);
 
-    printf("Thread %u executando... ", pt.i);
-    printf("Multiplicando do indice %i até %i\n", inicio, fim);
-
+    printf("Thread %u executando... Multiplicando do indice %i até %i\n", pt.i, inicio, fim);
+    
     mult(pt.n, inicio, fim, pt.a, pt.b, pt.m);
 
     pthread_exit(NULL);
