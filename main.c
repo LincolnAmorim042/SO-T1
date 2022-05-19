@@ -9,36 +9,31 @@
 #include <time.h>
 #include <unistd.h>
 
-typedef struct {
-    uint16_t i;
-    uint16_t n;
-    uint16_t nt;
-    int16_t **a;
-    int16_t **b;
-    int **m;
-}arq;
+uint16_t n;
+uint16_t nt;
+int16_t **a;
+int16_t **b;
+int **m;
 
-void mult(uint16_t n, uint16_t inicio, uint16_t fim, int16_t **a, int16_t **b, int **m) {
+void mult(uint16_t inicio, uint16_t fim) {
     uint16_t i, j, k;
-    for (i = inicio; i < fim; i++) {
-        for (j = inicio; j < fim; j++) {
+    for (i = inicio; i < fim+1; i++) {
+        for (j = 0; j < n; j++) {
             for (k = 0; k < n; k++){
                 m[i][j] += a[i][k] * b[k][j];
             }
-            printf("%d ", m[i][j]);
         }
-        printf("\n");
     }
 }
 
 void *controlt(void *param) {
-    arq pt = *((arq *)param);
-    uint16_t inicio = pt.i * (pt.n / pt.nt);
-    uint16_t fim = (pt.i == pt.nt - 1 ? pt.n - 1 : inicio + (pt.n / pt.nt) - 1);
+    uint16_t i = *((uint16_t *)param);
+    uint16_t inicio = i * (n / nt);
+    uint16_t fim = (i == nt-1 ? n-1 : inicio+(n/nt)-1);
 
-    printf("Thread %u executando... Multiplicando do indice %i até %i\n", pt.i, inicio, fim);
+    printf("Thread %u executando... Multiplicando do indice %i até %i\n", i, inicio, fim);
     
-    mult(pt.n, inicio, fim, pt.a, pt.b, pt.m);
+    mult(inicio, fim);
 
     pthread_exit(NULL);
 }
@@ -51,7 +46,6 @@ int main(int argc, char *argv[]) {
 
     FILE *fw_bin = NULL;
     FILE *fl_bin = NULL;
-    uint16_t n, nt;
 
     fl_bin = fopen(argv[1], "rb");
     if (fl_bin == NULL) {
@@ -59,21 +53,32 @@ int main(int argc, char *argv[]) {
         return 0;
     }
 
-    int16_t v;
-    fread(&v, sizeof(int16_t), 1, fl_bin);
+    uint16_t v;
+    fread(&v, sizeof(uint16_t), 1, fl_bin);
     n = v;
-  
-    // printf("%u\n", n);
-    int16_t a[n][n];
-    int16_t b[n][n];
-    int m[n][n];
+    nt = atoi(argv[2]);
+    if(nt>n){
+        printf("num-thread maior que o devido\n");
+        fclose(fl_bin);
+        return 0;
+    }
+    
+    a = (int16_t **)malloc(n * sizeof(int16_t *)); 
+    b = (int16_t **)malloc(n * sizeof(int16_t *)); 
+    m = (int **)malloc(n * sizeof(int *)); 
+
+    for (int i = 0; i < n; ++i){
+        a[i] = (int16_t *)malloc(n * sizeof(int16_t)); 
+        b[i] = (int16_t *)malloc(n * sizeof(int16_t *)); 
+        m[i] = (int *)malloc(n * sizeof(int *)); 
+    }
+
 
     for (uint16_t i = 0; i < n; i++) {
         for (uint16_t j = 0; j < n; j++) {
             m[i][j] = 0;
         }
     }
-
     for (uint16_t i = 0; i < n; i++) {
         for (uint16_t j = 0; j < n; j++) {
             fread(&v, sizeof(int16_t), 1, fl_bin);
@@ -92,33 +97,21 @@ int main(int argc, char *argv[]) {
     }
     printf("Arquivo lido\n");
 
-    fclose(fl_bin);
 
-    nt = atoi(argv[2]);
-    if(nt>n){
-        printf("num-thread maior que o devido\n");
-        return 0;
-    }
+    clock_t begin = clock(); // start clock
 
     pthread_t tid[nt];   // the thread identifier
     pthread_attr_t attr; // set of thread attributes
-    arq *params = NULL;
+    uint16_t *params = NULL;
 
-    params = (arq *)malloc(sizeof(arq) * nt);
-
-    clock_t begin = clock(); // start clock
+    params = (uint16_t *)malloc(sizeof(uint16_t) * nt);
 
     // get the default attributes
     pthread_attr_init(&attr);
 
     // create the thread
     for (uint16_t i = 0; i < nt; i++) {
-        params[i].i = i;
-        params[i].n = n;
-        params[i].nt = nt;
-        params[i].a = (int16_t **)&a;
-        params[i].b = (int16_t **)&b;
-        params[i].m = (int **)&m;
+        params[i] = i;
         pthread_create(&tid[i], &attr, controlt, &params[i]);
     }
 
