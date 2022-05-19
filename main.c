@@ -133,7 +133,7 @@ int main(int argc, char *argv[]) {
     for (uint16_t i = 0; i < n; i++) {
         for (uint16_t j = 0; j < n; j++) {
             printf("%d ",m[i][j]);
-            fwrite(&m[i][j], sizeof(int), n, fw_bin);
+            fwrite(&m[i][j], sizeof(int), 1, fw_bin);
         }
         printf("\n");
     }
