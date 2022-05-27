@@ -68,7 +68,7 @@ int main(int argc, char *argv[]) {
     m = (int **)malloc(n * sizeof(int *)); 
 
     for (uint16_t i = 0; i < n; ++i){
-        a[i] = (int16_t *)malloc(n * sizeof(int16_t)); 
+        a[i] = (int16_t *)malloc(n * sizeof(int16_t *)); 
         b[i] = (int16_t *)malloc(n * sizeof(int16_t *)); 
         m[i] = (int *)malloc(n * sizeof(int *)); 
     }
