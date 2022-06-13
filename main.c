@@ -96,7 +96,7 @@ int main(int argc, char *argv[]) {
         // printf("\n");
     }
     printf("Arquivo lido\n");
-
+    fclose(fl_bin);
 
     clock_t begin = clock(); // start clock
 
